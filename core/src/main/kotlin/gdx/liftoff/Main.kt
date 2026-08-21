@@ -1,13 +1,14 @@
 package gdx.liftoff
 
 import com.badlogic.gdx.ApplicationAdapter
-import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
+import gdx.liftoff.network.NetworkClient
 
 class Main : ApplicationAdapter() {
 
     private lateinit var shape: ShapeRenderer
+    private lateinit var network: NetworkClient
 
     private var squareX = 200f
     private var squareY = 300f
@@ -16,21 +17,31 @@ class Main : ApplicationAdapter() {
 
     override fun create() {
         shape = ShapeRenderer()
+
+        network = NetworkClient(
+            "wss://inform-previews-greeting-consequences.trycloudflare.com"
+        )
+
+        println("Connecting to Square Gun server...")
+        network.connect()
     }
 
     override fun render() {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f)
 
-        // Touch / drag
         if (com.badlogic.gdx.Gdx.input.isTouched) {
             squareX = com.badlogic.gdx.Gdx.input.x.toFloat()
             squareY =
-                (com.badlogic.gdx.Gdx.graphics.height - com.badlogic.gdx.Gdx.input.y).toFloat()
+                (com.badlogic.gdx.Gdx.graphics.height -
+                 com.badlogic.gdx.Gdx.input.y).toFloat()
+
+            network.send("MOVE $squareX $squareY")
         }
 
         shape.begin(ShapeRenderer.ShapeType.Filled)
 
         shape.color.set(1f, 0f, 0f, 1f)
+
         shape.rect(
             squareX - squareSize / 2,
             squareY - squareSize / 2,
@@ -42,6 +53,7 @@ class Main : ApplicationAdapter() {
     }
 
     override fun dispose() {
+        network.disconnect()
         shape.dispose()
     }
 }
