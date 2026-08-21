@@ -5,6 +5,9 @@ dependencies {
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
+	implementation files('../android/libs/Java-WebSocket.jar')
+implementation files('../android/libs/slf4j-api.jar')
+
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
