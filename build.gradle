@@ -62,7 +62,7 @@ configure(subprojects - project(':android')) {
 
 subprojects {
   version = "$projectVersion"
-  ext.appName = 'gdx-liftoff-demo-kotlin'
+  ext.appName = 'square gun'
   repositories {
     mavenCentral()
     // You may want to remove the following line if you have errors downloading dependencies.
@@ -73,4 +73,4 @@ subprojects {
   }
 }
 
-eclipse.project.name = 'gdx-liftoff-demo-kotlin' + '-parent'
+eclipse.project.name = 'square gun' + '-parent'
