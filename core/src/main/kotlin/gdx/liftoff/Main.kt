@@ -10,74 +10,111 @@ class Main : ApplicationAdapter() {
     private lateinit var shape: ShapeRenderer
     private lateinit var network: NetworkClient
 
-    private var squareX = 200f
-    private var squareY = 300f
+    private var playerX = 200f
+    private var playerY = 300f
 
     private val squareSize = 100f
 
-	private var otherPlayerVisible = false
-private var otherPlayerX = 400f
-private var otherPlayerY = 300f
+    private data class RemotePlayer(
+        val id: String,
+        var x: Float = 400f,
+        var y: Float = 300f
+    )
+
+    private val remotePlayers = mutableMapOf<String, RemotePlayer>()
 
     override fun create() {
         shape = ShapeRenderer()
 
         network = NetworkClient(
-    "wss://regime-sports-paid-dryer.trycloudflare.com",
+            "wss://regime-sports-paid-dryer.trycloudflare.com",
 
-    onPlayerJoin = { id ->
-        println("OTHER PLAYER JOINED: $id")
-        otherPlayerVisible = true
-    },
+            onPlayerJoin = { id ->
+                println("OTHER PLAYER JOINED: $id")
 
-    onPlayerLeave = { id ->
-        println("OTHER PLAYER LEFT: $id")
-        otherPlayerVisible = false
-    },
+                remotePlayers[id] = RemotePlayer(id)
+            },
 
-    onPlayerMove = { id, x, y ->
-        otherPlayerX = x
-        otherPlayerY = y
-    }
-)
+            onPlayerLeave = { id ->
+                println("OTHER PLAYER LEFT: $id")
+
+                remotePlayers.remove(id)
+            },
+
+            onPlayerMove = { id, x, y ->
+                val player = remotePlayers[id]
+
+                if (player != null) {
+                    player.x = x
+                    player.y = y
+                }
+            }
+        )
 
         println("Connecting to Square Gun server...")
         network.connect()
     }
 
     override fun render() {
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f)
+        ScreenUtils.clear(
+            0.15f,
+            0.15f,
+            0.2f,
+            1f
+        )
 
         if (com.badlogic.gdx.Gdx.input.isTouched) {
-            squareX = com.badlogic.gdx.Gdx.input.x.toFloat()
-            squareY =
-                (com.badlogic.gdx.Gdx.graphics.height -
-                 com.badlogic.gdx.Gdx.input.y).toFloat()
 
-            network.send("MOVE $squareX $squareY")
+            playerX =
+                com.badlogic.gdx.Gdx.input.x.toFloat()
+
+            playerY =
+                (
+                    com.badlogic.gdx.Gdx.graphics.height -
+                    com.badlogic.gdx.Gdx.input.y
+                ).toFloat()
+
+            network.send(
+                "MOVE $playerX $playerY"
+            )
         }
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
+        shape.begin(
+            ShapeRenderer.ShapeType.Filled
+        )
 
-        shape.color.set(1f, 0f, 0f, 1f)
+        // YOU = RED
+        shape.color.set(
+            1f,
+            0f,
+            0f,
+            1f
+        )
 
         shape.rect(
-            squareX - squareSize / 2,
-            squareY - squareSize / 2,
+            playerX - squareSize / 2,
+            playerY - squareSize / 2,
             squareSize,
             squareSize
         )
 
-	if (otherPlayerVisible) {
-    shape.color.set(0f, 0f, 1f, 1f)
+        // OTHER PLAYERS = BLUE
+        shape.color.set(
+            0f,
+            0f,
+            1f,
+            1f
+        )
 
-    shape.rect(
-        otherPlayerX - squareSize / 2,
-        otherPlayerY - squareSize / 2,
-        squareSize,
-        squareSize
-    )
-}
+        for (player in remotePlayers.values) {
+
+            shape.rect(
+                player.x - squareSize / 2,
+                player.y - squareSize / 2,
+                squareSize,
+                squareSize
+            )
+        }
 
         shape.end()
     }
