@@ -19,7 +19,7 @@ class Main : ApplicationAdapter() {
         shape = ShapeRenderer()
 
         network = NetworkClient(
-            "wss://inform-previews-greeting-consequences.trycloudflare.com"
+            "wss://regime-sports-paid-dryer.trycloudflare.com"
         )
 
         println("Connecting to Square Gun server...")
