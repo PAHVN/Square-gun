@@ -5,7 +5,10 @@ import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
 
 class NetworkClient(
-    serverUrl: String
+    serverUrl: String,
+    private val onPlayerJoin: (String) -> Unit,
+    private val onPlayerLeave: (String) -> Unit,
+    private val onPlayerMove: (String, Float, Float) -> Unit
 ) {
 
     private val client = object : WebSocketClient(URI(serverUrl)) {
@@ -17,6 +20,36 @@ class NetworkClient(
 
         override fun onMessage(message: String?) {
             println("NETWORK ← SERVER: $message")
+
+            if (message == null) return
+
+            val parts = message.split(" ")
+
+            when (parts[0]) {
+                "PLAYER_JOIN" -> {
+                    if (parts.size >= 2) {
+                        onPlayerJoin(parts[1])
+                    }
+                }
+
+                "PLAYER_LEAVE" -> {
+                    if (parts.size >= 2) {
+                        onPlayerLeave(parts[1])
+                    }
+                }
+
+                "PLAYER_MOVE" -> {
+                    if (parts.size >= 4) {
+                        val id = parts[1]
+                        val x = parts[2].toFloatOrNull()
+                        val y = parts[3].toFloatOrNull()
+
+                        if (x != null && y != null) {
+                            onPlayerMove(id, x, y)
+                        }
+                    }
+                }
+            }
         }
 
         override fun onClose(

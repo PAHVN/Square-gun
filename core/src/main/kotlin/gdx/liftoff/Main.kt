@@ -15,12 +15,31 @@ class Main : ApplicationAdapter() {
 
     private val squareSize = 100f
 
+	private var otherPlayerVisible = false
+private var otherPlayerX = 400f
+private var otherPlayerY = 300f
+
     override fun create() {
         shape = ShapeRenderer()
 
         network = NetworkClient(
-            "wss://regime-sports-paid-dryer.trycloudflare.com"
-        )
+    "wss://regime-sports-paid-dryer.trycloudflare.com",
+
+    onPlayerJoin = { id ->
+        println("OTHER PLAYER JOINED: $id")
+        otherPlayerVisible = true
+    },
+
+    onPlayerLeave = { id ->
+        println("OTHER PLAYER LEFT: $id")
+        otherPlayerVisible = false
+    },
+
+    onPlayerMove = { id, x, y ->
+        otherPlayerX = x
+        otherPlayerY = y
+    }
+)
 
         println("Connecting to Square Gun server...")
         network.connect()
@@ -48,6 +67,17 @@ class Main : ApplicationAdapter() {
             squareSize,
             squareSize
         )
+
+	if (otherPlayerVisible) {
+    shape.color.set(0f, 0f, 1f, 1f)
+
+    shape.rect(
+        otherPlayerX - squareSize / 2,
+        otherPlayerY - squareSize / 2,
+        squareSize,
+        squareSize
+    )
+}
 
         shape.end()
     }
