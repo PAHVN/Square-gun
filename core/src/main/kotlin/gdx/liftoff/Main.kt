@@ -17,6 +17,8 @@ class Main : ApplicationAdapter() {
 	private lateinit var stage: Stage
 private lateinit var skin: Skin
 
+	private lateinit var network: NetworkClient
+
 private lateinit var urlField: TextField
 private lateinit var connectButton: TextButton
 
