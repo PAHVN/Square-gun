@@ -7,6 +7,8 @@ import gdx.liftoff.network.NetworkClient
 
 class Main : ApplicationAdapter() {
 
+	private var serverUrl =
+    "wss://regime-sports-paid-dryer.trycloudflare.com"
     private lateinit var shape: ShapeRenderer
     private lateinit var network: NetworkClient
 
@@ -14,6 +16,14 @@ class Main : ApplicationAdapter() {
     private var playerY = 300f
 
     private val squareSize = 100f
+
+	private val connectButtonX = 40f
+private val connectButtonY = 40f
+private val connectButtonWidth = 300f
+private val connectButtonHeight = 100f
+
+private var connected = false
+private var connectPressed = false
 
     private data class RemotePlayer(
         val id: String,
@@ -23,36 +33,35 @@ class Main : ApplicationAdapter() {
 
     private val remotePlayers = mutableMapOf<String, RemotePlayer>()
 
+	private fun connectToServer() {
+
+    network = NetworkClient(
+        serverUrl,
+
+        onPlayerJoin = { id ->
+            println("OTHER PLAYER JOINED: $id")
+            remotePlayers[id] = RemotePlayer(id)
+        },
+
+        onPlayerLeave = { id ->
+            println("OTHER PLAYER LEFT: $id")
+            remotePlayers.remove(id)
+        },
+
+        onPlayerMove = { id, x, y ->
+            remotePlayers[id]?.let {
+                it.x = x
+                it.y = y
+            }
+        }
+    )
+
+    println("Connecting to $serverUrl")
+    network.connect()
+}
+
     override fun create() {
         shape = ShapeRenderer()
-
-        network = NetworkClient(
-            "wss://regime-sports-paid-dryer.trycloudflare.com",
-
-            onPlayerJoin = { id ->
-                println("OTHER PLAYER JOINED: $id")
-
-                remotePlayers[id] = RemotePlayer(id)
-            },
-
-            onPlayerLeave = { id ->
-                println("OTHER PLAYER LEFT: $id")
-
-                remotePlayers.remove(id)
-            },
-
-            onPlayerMove = { id, x, y ->
-                val player = remotePlayers[id]
-
-                if (player != null) {
-                    player.x = x
-                    player.y = y
-                }
-            }
-        )
-
-        println("Connecting to Square Gun server...")
-        network.connect()
     }
 
     override fun render() {
@@ -63,21 +72,30 @@ class Main : ApplicationAdapter() {
             1f
         )
 
-        if (com.badlogic.gdx.Gdx.input.isTouched) {
+	val touchX = com.badlogic.gdx.Gdx.input.x.toFloat()
+val touchY =
+    (com.badlogic.gdx.Gdx.graphics.height -
+     com.badlogic.gdx.Gdx.input.y).toFloat()
 
-            playerX =
-                com.badlogic.gdx.Gdx.input.x.toFloat()
+	if (com.badlogic.gdx.Gdx.input.isTouched) {
 
-            playerY =
-                (
-                    com.badlogic.gdx.Gdx.graphics.height -
-                    com.badlogic.gdx.Gdx.input.y
-                ).toFloat()
+    if (!connectPressed &&
+        touchX >= connectButtonX &&
+        touchX <= connectButtonX + connectButtonWidth &&
+        touchY >= connectButtonY &&
+        touchY <= connectButtonY + connectButtonHeight
+    ) {
+        connectPressed = true
+        connectToServer()
+    }
 
-            network.send(
-                "MOVE $playerX $playerY"
-            )
-        }
+    playerX = touchX
+    playerY = touchY
+
+    if (::network.isInitialized) {
+    network.send("MOVE $playerX $playerY")
+}
+}
 
         shape.begin(
             ShapeRenderer.ShapeType.Filled
@@ -116,11 +134,24 @@ class Main : ApplicationAdapter() {
             )
         }
 
+	// CONNECT BUTTON
+shape.color.set(0f, 0.8f, 0f, 1f)
+
+shape.rect(
+    connectButtonX,
+    connectButtonY,
+    connectButtonWidth,
+    connectButtonHeight
+)
+
         shape.end()
     }
 
     override fun dispose() {
+    if (::network.isInitialized) {
         network.disconnect()
-        shape.dispose()
     }
+    shape.dispose()
+}
+
 }
