@@ -1,45 +1,38 @@
 package gdx.liftoff
 
-import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Preferences
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
-import com.badlogic.gdx.utils.viewport.ScreenViewport
-import com.badlogic.gdx.ApplicationAdapter
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.ScreenUtils
+import com.badlogic.gdx.utils.viewport.ScreenViewport
 import gdx.liftoff.network.NetworkClient
 
 class Main : ApplicationAdapter() {
 
-	private lateinit var shape: ShapeRenderer
-	private lateinit var stage: Stage
-private lateinit var skin: Skin
+    private lateinit var shape: ShapeRenderer
 
-	private lateinit var network: NetworkClient
+    private lateinit var stage: Stage
+    private lateinit var skin: Skin
 
-private lateinit var urlField: TextField
-private lateinit var connectButton: TextButton
+    private lateinit var urlField: TextField
+    private lateinit var connectButton: TextButton
 
-	private lateinit var prefs: com.badlogic.gdx.Preferences
+    private lateinit var prefs: Preferences
+    private lateinit var network: NetworkClient
 
-private var serverUrl = ""
+    private var serverUrl = ""
 
     private var playerX = 200f
     private var playerY = 300f
 
     private val squareSize = 100f
-
-	private val connectButtonX = 40f
-private val connectButtonY = 40f
-private val connectButtonWidth = 300f
-private val connectButtonHeight = 100f
-
-private var connected = false
-private var connectPressed = false
 
     private data class RemotePlayer(
         val id: String,
@@ -47,102 +40,142 @@ private var connectPressed = false
         var y: Float = 300f
     )
 
-    private val remotePlayers = mutableMapOf<String, RemotePlayer>()
+    private val remotePlayers =
+        mutableMapOf<String, RemotePlayer>()
 
-	private fun connectToServer() {
+    private fun connectToServer() {
 
-    network = NetworkClient(
-        serverUrl,
+        serverUrl = urlField.text.trim()
 
-        onPlayerJoin = { id ->
-            println("OTHER PLAYER JOINED: $id")
-            remotePlayers[id] = RemotePlayer(id)
-        },
-
-        onPlayerLeave = { id ->
-            println("OTHER PLAYER LEFT: $id")
-            remotePlayers.remove(id)
-        },
-
-        onPlayerMove = { id, x, y ->
-            remotePlayers[id]?.let {
-                it.x = x
-                it.y = y
-            }
+        if (serverUrl.isEmpty()) {
+            connectButton.setText("EMPTY URL")
+            return
         }
-    )
-
-    println("Connecting to $serverUrl")
-    network.connect()
-}
-
-    override fun create() {
-        shape = ShapeRenderer()
-	skin = Skin(Gdx.files.internal("uiskin.json"))
-
-stage = Stage(ScreenViewport())
-Gdx.input.inputProcessor = stage
-
-prefs = Gdx.app.getPreferences("squaregun")
-serverUrl = prefs.getString("serverUrl", "")
-
-urlField = TextField(serverUrl, skin)
-urlField.setSize(900f, 90f)
-urlField.setPosition(40f, 600f)
-
-connectButton = TextButton("CONNECT", skin)
-connectButton.setSize(350f, 90f)
-connectButton.setPosition(40f, 480f)
-
-stage.addActor(urlField)
-stage.addActor(connectButton)
-
-connectButton.addListener(object : ClickListener() {
-    override fun clicked(event: InputEvent?, x: Float, y: Float) {
-
-	override fun clicked(event: InputEvent?, x: Float, y: Float) {
-    throw RuntimeException("CLICK WORKS")
-}
-
-        serverUrl = urlField.text
 
         prefs.putString("serverUrl", serverUrl)
         prefs.flush()
 
-        connectToServer()
-    }
-})
+        connectButton.setText("CONNECTING...")
 
+        network = NetworkClient(
+
+            serverUrl,
+
+            onPlayerJoin = { id ->
+
+                Gdx.app.postRunnable {
+
+                    remotePlayers[id] =
+                        RemotePlayer(id)
+
+                    connectButton.setText("CONNECTED")
+                }
+            },
+
+            onPlayerLeave = { id ->
+
+                Gdx.app.postRunnable {
+
+                    remotePlayers.remove(id)
+                }
+            },
+
+            onPlayerMove = { id, x, y ->
+
+                Gdx.app.postRunnable {
+
+                    remotePlayers[id]?.let {
+
+                        it.x = x
+                        it.y = y
+                    }
+                }
+            }
+        )
+
+        network.connect()
+    }
+
+    override fun create() {
+
+        shape = ShapeRenderer()
+
+        prefs =
+            Gdx.app.getPreferences("squaregun")
+
+        serverUrl =
+            prefs.getString("serverUrl", "")
+
+        skin =
+            Skin(Gdx.files.internal("uiskin.json"))
+
+        stage =
+            Stage(ScreenViewport())
+
+        Gdx.input.inputProcessor = stage
+
+        urlField =
+            TextField(serverUrl, skin)
+
+        urlField.setSize(900f, 90f)
+        urlField.setPosition(40f, 600f)
+
+        connectButton =
+            TextButton("CONNECT", skin)
+
+        connectButton.setSize(350f, 90f)
+        connectButton.setPosition(40f, 480f)
+
+        connectButton.addListener(
+
+            object : ClickListener() {
+
+                override fun clicked(
+                    event: InputEvent?,
+                    x: Float,
+                    y: Float
+                ) {
+
+                    connectToServer()
+                }
+            }
+        )
+
+        stage.addActor(urlField)
+        stage.addActor(connectButton)
     }
 
     override fun render() {
+
         ScreenUtils.clear(
             0.15f,
             0.15f,
-            0.2f,
+            0.20f,
             1f
         )
 
-	val touchX = com.badlogic.gdx.Gdx.input.x.toFloat()
-val touchY =
-    (com.badlogic.gdx.Gdx.graphics.height -
-     com.badlogic.gdx.Gdx.input.y).toFloat()
+        // Cho UI xử lý trước
+        stage.act(Gdx.graphics.deltaTime)
 
-	if (com.badlogic.gdx.Gdx.input.isTouched) {
+        // Chỉ di chuyển khi KHÔNG chạm vào UI
+	if (Gdx.input.isTouched) {
 
-    playerX = touchX
-    playerY = touchY
+    playerX = Gdx.input.x.toFloat()
+
+    playerY =
+        (Gdx.graphics.height -
+         Gdx.input.y).toFloat()
 
     if (::network.isInitialized) {
-    network.send("MOVE $playerX $playerY")
-}
+        network.send("MOVE $playerX $playerY")
+    }
 }
 
         shape.begin(
             ShapeRenderer.ShapeType.Filled
         )
 
-        // YOU = RED
+        // Player của mình (đỏ)
         shape.color.set(
             1f,
             0f,
@@ -157,7 +190,7 @@ val touchY =
             squareSize
         )
 
-        // OTHER PLAYERS = BLUE
+        // Player khác (xanh)
         shape.color.set(
             0f,
             0f,
@@ -175,17 +208,19 @@ val touchY =
             )
         }
 
-
         shape.end()
-stage.act(Gdx.graphics.deltaTime)
-stage.draw()
+
+        stage.draw()
     }
 
     override fun dispose() {
-    if (::network.isInitialized) {
-        network.disconnect()
-    }
-    shape.dispose()
-}
 
+        if (::network.isInitialized) {
+            network.disconnect()
+        }
+
+        stage.dispose()
+        skin.dispose()
+        shape.dispose()
+    }
 }
