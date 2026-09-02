@@ -1,5 +1,11 @@
 package gdx.liftoff
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.ui.TextField
+import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
@@ -7,10 +13,16 @@ import gdx.liftoff.network.NetworkClient
 
 class Main : ApplicationAdapter() {
 
-	private var serverUrl =
-    "wss://regime-sports-paid-dryer.trycloudflare.com"
-    private lateinit var shape: ShapeRenderer
-    private lateinit var network: NetworkClient
+	private lateinit var shape: ShapeRenderer
+	private lateinit var stage: Stage
+private lateinit var skin: Skin
+
+private lateinit var urlField: TextField
+private lateinit var connectButton: TextButton
+
+	private lateinit var prefs: com.badlogic.gdx.Preferences
+
+private var serverUrl = ""
 
     private var playerX = 200f
     private var playerY = 300f
@@ -62,6 +74,20 @@ private var connectPressed = false
 
     override fun create() {
         shape = ShapeRenderer()
+	skin = Skin(Gdx.files.internal("uiskin.json"))
+
+stage = Stage(ScreenViewport())
+Gdx.input.inputProcessor = stage
+
+prefs = Gdx.app.getPreferences("squaregun")
+serverUrl = prefs.getString("serverUrl", "")
+
+skin = Skin(Gdx.files.internal("uiskin.json"))
+
+stage = Stage(ScreenViewport())
+Gdx.input.inputProcessor = stage
+
+urlField = TextField(serverUrl, skin)
     }
 
     override fun render() {
@@ -78,16 +104,6 @@ val touchY =
      com.badlogic.gdx.Gdx.input.y).toFloat()
 
 	if (com.badlogic.gdx.Gdx.input.isTouched) {
-
-    if (!connectPressed &&
-        touchX >= connectButtonX &&
-        touchX <= connectButtonX + connectButtonWidth &&
-        touchY >= connectButtonY &&
-        touchY <= connectButtonY + connectButtonHeight
-    ) {
-        connectPressed = true
-        connectToServer()
-    }
 
     playerX = touchX
     playerY = touchY
@@ -134,17 +150,10 @@ val touchY =
             )
         }
 
-	// CONNECT BUTTON
-shape.color.set(0f, 0.8f, 0f, 1f)
-
-shape.rect(
-    connectButtonX,
-    connectButtonY,
-    connectButtonWidth,
-    connectButtonHeight
-)
 
         shape.end()
+stage.act(Gdx.graphics.deltaTime)
+stage.draw()
     }
 
     override fun dispose() {
