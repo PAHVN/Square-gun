@@ -84,12 +84,17 @@ Gdx.input.inputProcessor = stage
 prefs = Gdx.app.getPreferences("squaregun")
 serverUrl = prefs.getString("serverUrl", "")
 
-skin = Skin(Gdx.files.internal("uiskin.json"))
-
-stage = Stage(ScreenViewport())
-Gdx.input.inputProcessor = stage
-
 urlField = TextField(serverUrl, skin)
+urlField.setSize(900f, 90f)
+urlField.setPosition(40f, 600f)
+
+connectButton = TextButton("CONNECT", skin)
+connectButton.setSize(350f, 90f)
+connectButton.setPosition(40f, 480f)
+
+stage.addActor(urlField)
+stage.addActor(connectButton)
+
     }
 
     override fun render() {
