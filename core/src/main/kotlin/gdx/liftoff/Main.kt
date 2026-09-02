@@ -100,6 +100,10 @@ stage.addActor(connectButton)
 connectButton.addListener(object : ClickListener() {
     override fun clicked(event: InputEvent?, x: Float, y: Float) {
 
+	override fun clicked(event: InputEvent?, x: Float, y: Float) {
+    throw RuntimeException("CLICK WORKS")
+}
+
         serverUrl = urlField.text
 
         prefs.putString("serverUrl", serverUrl)
