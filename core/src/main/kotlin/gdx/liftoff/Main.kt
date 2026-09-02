@@ -1,5 +1,7 @@
 package gdx.liftoff
 
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
@@ -94,6 +96,18 @@ connectButton.setPosition(40f, 480f)
 
 stage.addActor(urlField)
 stage.addActor(connectButton)
+
+connectButton.addListener(object : ClickListener() {
+    override fun clicked(event: InputEvent?, x: Float, y: Float) {
+
+        serverUrl = urlField.text
+
+        prefs.putString("serverUrl", serverUrl)
+        prefs.flush()
+
+        connectToServer()
+    }
+})
 
     }
 
