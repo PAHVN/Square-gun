@@ -9,24 +9,33 @@ class NetworkClient(
     private val nickname: String,
     private val shape: String,
     private val color: String,
+
+    private val onConnected: () -> Unit,
+    private val onDisconnected: () -> Unit,
+
     private val onPlayerJoin: (String) -> Unit,
     private val onPlayerLeave: (String) -> Unit,
     private val onPlayerMove: (String, Float, Float) -> Unit,
     private val onPlayerInfo: (String, String, String, String) -> Unit
 ) {
 
+	private val onConnected: () -> Unit,
+
     private val client = object : WebSocketClient(URI(serverUrl)) {
 
         override fun onOpen(handshake: ServerHandshake?) {
-            println("NETWORK: CONNECTED ✓")
-            send("HELLO $nickname $shape $color")
-       }
+    println("NETWORK: CONNECTED ✓")
+
+    onConnected()
+
+    send("HELLO $nickname $shape $color")
+}
 
         override fun onMessage(message: String?) {
             println("NETWORK ← SERVER: $message")
 
             if (message == null) return
-
+	
             val parts = message.split(" ")
 
             when (parts[0]) {
@@ -71,14 +80,15 @@ class NetworkClient(
             }
         }
 
-        override fun onClose(
-            code: Int,
-            reason: String?,
-            remote: Boolean
-        ) {
-            println("NETWORK: DISCONNECTED")
-        }
+override fun onClose(
+    code: Int,
+    reason: String?,
+    remote: Boolean
+) {
+    onDisconnected()
 
+    println("NETWORK: DISCONNECTED")
+}
         override fun onError(ex: Exception?) {
             println("NETWORK ERROR: ${ex?.message}")
         }
@@ -91,6 +101,12 @@ class NetworkClient(
     fun disconnect() {
         client.close()
     }
+
+
+	fun isConnected(): Boolean {
+    return client.isOpen
+}
+
 
     fun send(message: String) {
         if (client.isOpen) {

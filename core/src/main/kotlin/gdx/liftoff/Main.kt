@@ -57,6 +57,10 @@ private val sendInterval = 0.05f // 20 lần/giây
 
     private fun connectToServer() {
 
+	if (::network.isInitialized) {
+    return
+}
+
         serverUrl = urlField.text.trim()
 
         if (serverUrl.isEmpty()) {
@@ -85,12 +89,8 @@ private val sendInterval = 0.05f // 20 lần/giây
 profile.shape,
 profile.color,
 
-            onPlayerJoin = { id ->
-
+            onConnected = {
                 Gdx.app.postRunnable {
-
-                    remotePlayers[id] =
-                        RemotePlayer(id)
 
                     connectButton.setText(
                         "CONNECTED"
@@ -99,6 +99,18 @@ profile.color,
                 }
 
             },
+
+
+	onDisconnected = {
+
+    Gdx.app.postRunnable {
+
+        connectButton.setText("CONNECT")
+        connectButton.isDisabled = false
+
+    }
+
+},
 
             onPlayerLeave = { id ->
 
@@ -134,6 +146,8 @@ profile.color,
 }
 
         )
+
+	connectButton.isDisabled = true
 
         network.connect()
 
