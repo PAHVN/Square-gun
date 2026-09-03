@@ -19,8 +19,6 @@ class NetworkClient(
     private val onPlayerInfo: (String, String, String, String) -> Unit
 ) {
 
-	private val onConnected: () -> Unit,
-
     private val client = object : WebSocketClient(URI(serverUrl)) {
 
         override fun onOpen(handshake: ServerHandshake?) {
