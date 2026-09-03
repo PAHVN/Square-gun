@@ -34,6 +34,8 @@ class Main : ApplicationAdapter() {
 
     private lateinit var player: Player
 
+	private lateinit var profile: PlayerProfile
+
 	private var lastSentX = Float.NaN
 private var lastSentY = Float.NaN
 
@@ -142,6 +144,25 @@ private val sendInterval = 0.05f // 20 lần/giây
             Gdx.app.getPreferences(
                 "squaregun"
             )
+
+	profile = PlayerProfile(
+
+    prefs.getString(
+        "nickname",
+        "Player"
+    ),
+
+    prefs.getString(
+        "shape",
+        "square"
+    ),
+
+    prefs.getString(
+        "color",
+        "red"
+    )
+
+)
 
         serverUrl =
             prefs.getString(
