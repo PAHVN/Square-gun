@@ -1,5 +1,4 @@
-const url = "wss://inform-previews-greeting-consequences.trycloudflare.com";
-
+const url = "wss://foods-significant-horizon-accessed.trycloudflare.com";
 const playerName = process.argv[2] || "Player";
 
 console.log(`${playerName}: Connecting...`);

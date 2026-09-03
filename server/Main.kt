@@ -14,7 +14,13 @@ class GameServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
     private val players = mutableMapOf<WebSocket, Player>()
 
     override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
-        val id = UUID.randomUUID().toString().take(8)
+	println("=== onOpen CALLED ===")
+    System.out.flush()
+
+    val id = UUID.randomUUID().toString().take(8)
+
+    println("Player connected: $id")
+    System.out.flush()
 
         // Gửi danh sách player đang online cho player mới
         for (player in players.values) {
@@ -51,6 +57,10 @@ class GameServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
     }
 
     override fun onMessage(conn: WebSocket, message: String) {
+
+	println("MESSAGE: $message")
+System.out.flush()
+
         val player = players[conn] ?: return
 
         println("${player.id}: $message")
@@ -91,10 +101,36 @@ class GameServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
 }
 
 fun main() {
-    val server = GameServer(8080)
 
-    server.start()
+    try {
 
-    println("Server starting...")
-    println("Press Ctrl+C to stop.")
+        val server = GameServer(8080)
+
+        server.start()
+
+println("START CALLED")
+
+Thread.sleep(3000)
+
+println("Address = ${server.address}")
+println("Port    = ${server.port}")
+
+try {
+    val socket = java.net.Socket("127.0.0.1", 8080)
+    println("LOCAL SOCKET OK")
+    socket.close()
+} catch (e: Exception) {
+    println("LOCAL SOCKET FAIL: ${e.javaClass.simpleName}")
+    e.printStackTrace()
+}
+
+while (true) {
+    Thread.sleep(1000)
+}
+
+    } catch (e: Exception) {
+
+        e.printStackTrace()
+
+    }
 }
