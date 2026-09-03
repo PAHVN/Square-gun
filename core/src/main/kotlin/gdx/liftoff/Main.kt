@@ -2,10 +2,14 @@ package gdx.liftoff
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.Preferences
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
@@ -13,10 +17,22 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import gdx.liftoff.network.NetworkClient
+import kotlin.math.sqrt
 
 class Main : ApplicationAdapter() {
 
+    // =========================
+    // Render
+    // =========================
+
     private lateinit var shape: ShapeRenderer
+    private lateinit var camera: OrthographicCamera
+
+    // =========================
+    // UI
+    // =========================
+
+	private lateinit var joystick: Joystick
 
     private lateinit var stage: Stage
     private lateinit var skin: Skin
@@ -24,38 +40,85 @@ class Main : ApplicationAdapter() {
     private lateinit var urlField: TextField
     private lateinit var connectButton: TextButton
 
-    private lateinit var prefs: Preferences
+    // =========================
+    // Network
+    // =========================
+
     private lateinit var network: NetworkClient
+    private lateinit var prefs: Preferences
 
     private var serverUrl = ""
 
-    private var playerX = 200f
-    private var playerY = 300f
+    // =========================
+    // Player
+    // =========================
 
-    private val squareSize = 100f
+    private var playerX = 600f
+    private var playerY = 400f
+
+    private val playerSize = 100f
+    private val moveSpeed = 450f
+
+    // =========================
+    // Camera
+    // =========================
+
+    private val cameraLerp = 0.12f
+
+    // =========================
+    // Joystick
+    // =========================
+
+    private val joystickCenter =
+        Vector2(180f,180f)
+
+    private val joystickRadius = 120f
+    private val knobRadius = 45f
+
+    private var moveX = 0f
+    private var moveY = 0f
+
+    // =========================
+    // Remote Players
+    // =========================
 
     private data class RemotePlayer(
-        val id: String,
-        var x: Float = 400f,
-        var y: Float = 300f
+
+        val id:String,
+
+        var x:Float = 0f,
+        var y:Float = 0f
+
     )
 
     private val remotePlayers =
-        mutableMapOf<String, RemotePlayer>()
+        mutableMapOf<String,RemotePlayer>()
 
-    private fun connectToServer() {
+    // =========================
+    // CONNECT
+    // =========================
+
+    private fun connectToServer(){
 
         serverUrl = urlField.text.trim()
 
-        if (serverUrl.isEmpty()) {
+        if(serverUrl.isEmpty()){
+
             connectButton.setText("EMPTY URL")
             return
+
         }
 
-        prefs.putString("serverUrl", serverUrl)
+        prefs.putString(
+            "serverUrl",
+            serverUrl
+        )
+
         prefs.flush()
 
-        connectButton.setText("CONNECTING...")
+        connectButton.setText(
+            "CONNECTING..."
+        )
 
         network = NetworkClient(
 
@@ -63,164 +126,420 @@ class Main : ApplicationAdapter() {
 
             onPlayerJoin = { id ->
 
-                Gdx.app.postRunnable {
+                Gdx.app.postRunnable{
 
                     remotePlayers[id] =
                         RemotePlayer(id)
 
-                    connectButton.setText("CONNECTED")
+                    connectButton.setText(
+                        "CONNECTED"
+                    )
+
                 }
+
             },
 
             onPlayerLeave = { id ->
 
-                Gdx.app.postRunnable {
+                Gdx.app.postRunnable{
 
                     remotePlayers.remove(id)
+
                 }
+
             },
 
-            onPlayerMove = { id, x, y ->
+            onPlayerMove = { id,x,y ->
 
-                Gdx.app.postRunnable {
+                Gdx.app.postRunnable{
 
-                    remotePlayers[id]?.let {
+                    remotePlayers[id]?.let{
 
                         it.x = x
                         it.y = y
+
                     }
+
                 }
+
             }
+
         )
 
         network.connect()
+
     }
 
-    override fun create() {
+    // =========================
+    // CREATE
+    // =========================
+
+    override fun create(){
 
         shape = ShapeRenderer()
 
+        camera = OrthographicCamera()
+
+        camera.setToOrtho(
+            false,
+            Gdx.graphics.width.toFloat(),
+            Gdx.graphics.height.toFloat()
+        )
+
         prefs =
-            Gdx.app.getPreferences("squaregun")
+            Gdx.app.getPreferences(
+                "squaregun"
+            )
 
         serverUrl =
-            prefs.getString("serverUrl", "")
+            prefs.getString(
+                "serverUrl",
+                ""
+            )
 
         skin =
-            Skin(Gdx.files.internal("uiskin.json"))
+            Skin(
+                Gdx.files.internal(
+                    "uiskin.json"
+                )
+            )
 
         stage =
-            Stage(ScreenViewport())
-
-        Gdx.input.inputProcessor = stage
+            Stage(
+                ScreenViewport()
+            )
 
         urlField =
-            TextField(serverUrl, skin)
+            TextField(
+                serverUrl,
+                skin
+            )
 
-        urlField.setSize(900f, 90f)
-        urlField.setPosition(40f, 600f)
+        urlField.setSize(
+            900f,
+            90f
+        )
+
+        urlField.setPosition(
+            40f,
+            600f
+        )
 
         connectButton =
-            TextButton("CONNECT", skin)
+            TextButton(
+                "CONNECT",
+                skin
+            )
 
-        connectButton.setSize(350f, 90f)
-        connectButton.setPosition(40f, 480f)
+        connectButton.setSize(
+            350f,
+            90f
+        )
+
+        connectButton.setPosition(
+            40f,
+            480f
+        )
 
         connectButton.addListener(
 
-            object : ClickListener() {
+            object:ClickListener(){
 
                 override fun clicked(
-                    event: InputEvent?,
-                    x: Float,
-                    y: Float
-                ) {
+
+                    event:InputEvent?,
+                    x:Float,
+                    y:Float
+
+                ){
 
                     connectToServer()
+
                 }
+
             }
+
         )
 
-        stage.addActor(urlField)
-        stage.addActor(connectButton)
-    }
-
-    override fun render() {
-
-        ScreenUtils.clear(
-            0.15f,
-            0.15f,
-            0.20f,
-            1f
+        stage.addActor(
+            urlField
         )
 
-        // Cho UI xử lý trước
-        stage.act(Gdx.graphics.deltaTime)
+        stage.addActor(
+            connectButton
+        )
 
-        // Chỉ di chuyển khi KHÔNG chạm vào UI
-	if (Gdx.input.isTouched) {
+        Gdx.input.inputProcessor =
 
-    playerX = Gdx.input.x.toFloat()
+            InputMultiplexer(
+                stage
+            )
 
-    playerY =
-        (Gdx.graphics.height -
-         Gdx.input.y).toFloat()
+		joystick = Joystick(
+    180f,
+    180f,
+    120f
+)
 
-    if (::network.isInitialized) {
-        network.send("MOVE $playerX $playerY")
     }
-}
+
+    // =========================
+    // UPDATE INPUT
+    // =========================
+
+    private fun updateInput(){
+
+        if(Gdx.input.isTouched){
+
+            val tx =
+                Gdx.input.x.toFloat()
+
+            val ty =
+                Gdx.graphics.height -
+                Gdx.input.y.toFloat()
+
+            val dx =
+                tx - joystickCenter.x
+
+            val dy =
+                ty - joystickCenter.y
+
+            val dist =
+                sqrt(dx*dx + dy*dy)
+
+            if(dist < joystickRadius){
+
+                moveX =
+                    dx / joystickRadius
+
+                moveY =
+                    dy / joystickRadius
+
+            }else{
+
+                moveX =
+                    dx / dist
+
+                moveY =
+                    dy / dist
+
+            }
+
+        }else{
+
+            moveX = 0f
+            moveY = 0f
+
+        }
+
+    }
+
+    // =========================
+    // UPDATE PLAYER
+    // =========================
+
+    private fun updatePlayer(){
+
+        playerX +=
+            moveX *
+            moveSpeed *
+            Gdx.graphics.deltaTime
+
+        playerY +=
+            moveY *
+            moveSpeed *
+            Gdx.graphics.deltaTime
+
+        if(::network.isInitialized){
+
+            network.send(
+                "MOVE $playerX $playerY"
+            )
+
+        }
+
+    }
+
+    // =========================
+    // UPDATE CAMERA
+    // =========================
+
+    private fun updateCamera(){
+
+        camera.position.x +=
+
+            (playerX -
+             camera.position.x)
+                * cameraLerp
+
+        camera.position.y +=
+
+            (playerY -
+             camera.position.y)
+                * cameraLerp
+
+        camera.update()
+
+        shape.projectionMatrix =
+            camera.combined
+
+    }
+
+    // =========================
+    // DRAW WORLD
+    // =========================
+
+    private fun drawWorld(){
 
         shape.begin(
             ShapeRenderer.ShapeType.Filled
         )
 
-        // Player của mình (đỏ)
-        shape.color.set(
-            1f,
-            0f,
-            0f,
-            1f
-        )
+        // Player mình
+
+        shape.color = Color.RED
 
         shape.rect(
-            playerX - squareSize / 2,
-            playerY - squareSize / 2,
-            squareSize,
-            squareSize
+
+            playerX -
+                playerSize/2,
+
+            playerY -
+                playerSize/2,
+
+            playerSize,
+
+            playerSize
+
         )
 
-        // Player khác (xanh)
-        shape.color.set(
-            0f,
-            0f,
-            1f,
-            1f
-        )
+        // Player khác
 
-        for (player in remotePlayers.values) {
+        shape.color = Color.BLUE
+
+        for(player in remotePlayers.values){
 
             shape.rect(
-                player.x - squareSize / 2,
-                player.y - squareSize / 2,
-                squareSize,
-                squareSize
+
+                player.x -
+                    playerSize/2,
+
+                player.y -
+                    playerSize/2,
+
+                playerSize,
+
+                playerSize
+
             )
+
         }
 
         shape.end()
 
-        stage.draw()
     }
 
-    override fun dispose() {
+    // =========================
+    // DRAW HUD
+    // =========================
 
-        if (::network.isInitialized) {
+    private fun drawHud(){
+
+        shape.projectionMatrix =
+            stage.camera.combined
+
+        shape.begin(
+            ShapeRenderer.ShapeType.Filled
+        )
+
+        shape.color =
+            Color.DARK_GRAY
+
+        shape.circle(
+
+            joystickCenter.x,
+
+            joystickCenter.y,
+
+            joystickRadius
+
+        )
+
+        shape.color =
+            Color.WHITE
+
+        shape.circle(
+
+            joystickCenter.x +
+                moveX *
+                joystickRadius,
+
+            joystickCenter.y +
+                moveY *
+                joystickRadius,
+
+            knobRadius
+
+        )
+
+        shape.end()
+
+    }
+
+    // =========================
+    // RENDER
+    // =========================
+
+    override fun render(){
+
+        ScreenUtils.clear(
+
+            0.15f,
+            0.15f,
+            0.20f,
+            1f
+
+        )
+
+        stage.act(
+            Gdx.graphics.deltaTime
+        )
+
+        joystick.update()
+
+moveX = joystick.moveX
+moveY = joystick.moveY
+
+        updatePlayer()
+
+        updateCamera()
+
+        drawWorld()
+
+        drawHud()
+
+        stage.draw()
+
+    }
+
+    // =========================
+    // DISPOSE
+    // =========================
+
+    override fun dispose(){
+
+        if(::network.isInitialized){
+
             network.disconnect()
+
         }
 
         stage.dispose()
+
         skin.dispose()
+
         shape.dispose()
+
     }
+
 }
