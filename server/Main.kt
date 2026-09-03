@@ -16,6 +16,8 @@ class GameServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
     override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
 	println("=== onOpen CALLED ===")
     System.out.flush()
+	println(handshake.resourceDescriptor)
+    System.out.flush()
 
     val id = UUID.randomUUID().toString().take(8)
 
@@ -74,7 +76,8 @@ System.out.flush()
     }
 
     override fun onError(conn: WebSocket?, ex: Exception) {
-        println("Server error: ${ex.message}")
+        ex.printStackTrace()
+
     }
 
     override fun onStart() {

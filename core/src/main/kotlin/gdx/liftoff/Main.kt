@@ -34,6 +34,12 @@ class Main : ApplicationAdapter() {
 
     private lateinit var player: Player
 
+	private var lastSentX = Float.NaN
+private var lastSentY = Float.NaN
+
+private var sendTimer = 0f
+private val sendInterval = 0.05f // 20 lần/giây
+
     private lateinit var network: NetworkClient
 
     private var serverUrl = ""
@@ -326,17 +332,33 @@ class Main : ApplicationAdapter() {
 
         player.update(
 
-            joystick.moveX,
-            joystick.moveY
-        )
+    joystick.moveX,
+    joystick.moveY
+)
 
-        if (::network.isInitialized) {
+if (::network.isInitialized) {
+
+    sendTimer += Gdx.graphics.deltaTime
+
+    if (sendTimer >= sendInterval) {
+
+        sendTimer = 0f
+
+        if (player.x != lastSentX ||
+            player.y != lastSentY) {
 
             network.send(
                 "MOVE ${player.x} ${player.y}"
             )
 
+            lastSentX = player.x
+            lastSentY = player.y
+
         }
+
+    }
+
+}
 
         cameraController.update(
             player.x,
