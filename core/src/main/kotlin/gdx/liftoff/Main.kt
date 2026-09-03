@@ -1,5 +1,7 @@
 package gdx.liftoff
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
@@ -20,6 +22,10 @@ import gdx.liftoff.network.NetworkClient
 class Main : ApplicationAdapter() {
 
     private lateinit var shape: ShapeRenderer
+
+	private lateinit var batch: SpriteBatch
+private lateinit var font: BitmapFont
+
     private lateinit var camera: OrthographicCamera
     private lateinit var cameraController: CameraController
 
@@ -75,6 +81,10 @@ private val sendInterval = 0.05f // 20 lần/giây
 
             serverUrl,
 
+		profile.nickname,
+profile.shape,
+profile.color,
+
             onPlayerJoin = { id ->
 
                 Gdx.app.postRunnable {
@@ -109,7 +119,19 @@ private val sendInterval = 0.05f // 20 lần/giây
 
                 }
 
-            }
+            },
+
+	onPlayerInfo = { id, nickname, shape, color ->
+
+    Gdx.app.postRunnable {
+
+        remotePlayers[id]?.nickname = nickname
+        remotePlayers[id]?.shape = shape
+        remotePlayers[id]?.color = color
+
+    }
+
+}
 
         )
 
@@ -119,6 +141,9 @@ private val sendInterval = 0.05f // 20 lần/giây
     override fun create() {
 
         shape = ShapeRenderer()
+
+	batch = SpriteBatch()
+font = BitmapFont()
 
         camera = OrthographicCamera()
 
@@ -293,6 +318,30 @@ private val sendInterval = 0.05f // 20 lần/giây
 
         shape.end()
 
+	batch.projectionMatrix = camera.combined
+batch.begin()
+
+// nickname của mình
+font.draw(
+    batch,
+    "YOU",
+    player.x - 20f,
+    player.y + player.size
+)
+
+// nickname remote
+for (remote in remotePlayers.values) {
+
+    font.draw(
+        batch,
+        remote.nickname,
+        remote.x - 20f,
+        remote.y + player.size
+    )
+}
+
+batch.end()
+
     }
 
     private fun drawHud() {
@@ -407,6 +456,9 @@ if (::network.isInitialized) {
         skin.dispose()
 
         shape.dispose()
+
+	batch.dispose()
+font.dispose()
 
     }
 

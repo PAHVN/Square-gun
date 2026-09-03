@@ -6,17 +6,21 @@ import java.net.URI
 
 class NetworkClient(
     serverUrl: String,
+    private val nickname: String,
+    private val shape: String,
+    private val color: String,
     private val onPlayerJoin: (String) -> Unit,
     private val onPlayerLeave: (String) -> Unit,
-    private val onPlayerMove: (String, Float, Float) -> Unit
+    private val onPlayerMove: (String, Float, Float) -> Unit,
+    private val onPlayerInfo: (String, String, String, String) -> Unit
 ) {
 
     private val client = object : WebSocketClient(URI(serverUrl)) {
 
         override fun onOpen(handshake: ServerHandshake?) {
             println("NETWORK: CONNECTED ✓")
-            send("HELLO")
-        }
+            send("HELLO $nickname $shape $color")
+       }
 
         override fun onMessage(message: String?) {
             println("NETWORK ← SERVER: $message")
@@ -31,6 +35,21 @@ class NetworkClient(
                         onPlayerJoin(parts[1])
                     }
                 }
+
+		"PLAYER_INFO" -> {
+
+    if (parts.size >= 5) {
+
+        onPlayerInfo(
+            parts[1],
+            parts[2],
+            parts[3],
+            parts[4]
+        )
+
+    }
+
+}
 
                 "PLAYER_LEAVE" -> {
                     if (parts.size >= 2) {

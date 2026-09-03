@@ -6,7 +6,10 @@ import java.util.UUID
 
 data class Player(
     val id: String,
-    val connection: WebSocket
+    val connection: WebSocket,
+    var nickname: String = "Player",
+    var shape: String = "square",
+    var color: String = "red"
 )
 
 class GameServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
@@ -26,8 +29,14 @@ class GameServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
 
         // Gửi danh sách player đang online cho player mới
         for (player in players.values) {
-            conn.send("PLAYER_JOIN ${player.id}")
-        }
+
+    conn.send("PLAYER_JOIN ${player.id}")
+
+    conn.send(
+        "PLAYER_INFO ${player.id} ${player.nickname} ${player.shape} ${player.color}"
+    )
+
+}
 
         players[conn] = Player(id, conn)
 
@@ -66,6 +75,30 @@ System.out.flush()
         val player = players[conn] ?: return
 
         println("${player.id}: $message")
+
+	if (message.startsWith("HELLO ")) {
+
+    val parts = message.split(" ")
+
+    if (parts.size >= 4) {
+
+        player.nickname = parts[1]
+        player.shape = parts[2]
+        player.color = parts[3]
+
+        println(
+            "${player.id} -> ${player.nickname} ${player.shape} ${player.color}"
+        )
+
+        broadcastAll(
+            "PLAYER_INFO ${player.id} ${player.nickname} ${player.shape} ${player.color}"
+        )
+
+    }
+
+    return
+
+}
 
         if (message.startsWith("MOVE ")) {
             broadcastExcept(
