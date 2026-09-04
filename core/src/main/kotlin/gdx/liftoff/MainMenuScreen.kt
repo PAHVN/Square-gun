@@ -161,7 +161,7 @@ prefs.putString(
 )
 
 prefs.flush()
-                game.screen = Test3DScreen(game)
+                game.screen = GameScreen(game)
             }
         })
 
