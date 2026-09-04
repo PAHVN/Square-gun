@@ -1,18 +1,19 @@
 package gdx.liftoff.android
 
 import android.os.Bundle
-
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
-import gdx.liftoff.Main
+import gdx.liftoff.SquareGunGame
 
-/** Launches the Android application. */
 class AndroidLauncher : AndroidApplication() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initialize(SquareGunGame(), configuration), AndroidApplicationConfiguration().apply {
-            // Configure your application here.
-            useImmersiveMode = true // Recommended, but not required.
-        })
+
+        val configuration = AndroidApplicationConfiguration().apply {
+            useImmersiveMode = true
+        }
+
+        initialize(SquareGunGame(), configuration)
     }
 }
