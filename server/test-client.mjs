@@ -1,4 +1,4 @@
-const url = "wss://close-pure-together-wrestling.trycloudflare.com";
+const url = "wss://roulette-previews-agrees-grace.trycloudflare.com";
 const playerName = process.argv[2] || "Player";
 
 console.log(`${playerName}: Connecting...`);
