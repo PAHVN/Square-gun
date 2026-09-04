@@ -308,41 +308,51 @@ font = BitmapFont()
             ShapeRenderer.ShapeType.Filled
         )
 
-        shape.color = Color.RED
+		shape.color = when (profile.color) {
+    "red" -> Color.RED
+    "blue" -> Color.BLUE
+    "green" -> Color.GREEN
+    "yellow" -> Color.YELLOW
+    else -> Color.RED
+}
+when (profile.shape) {
+
+    "square" -> {
 
         shape.rect(
-
-            player.x -
-                player.size / 2f,
-
-            player.y -
-                player.size / 2f,
-
+            player.x - player.size / 2f,
+            player.y - player.size / 2f,
             player.size,
-
             player.size
-
         )
 
-        shape.color = Color.BLUE
+    }
 
-        for (remote in remotePlayers.values) {
+    "circle" -> {
 
-            shape.rect(
+        shape.circle(
+            player.x,
+            player.y,
+            player.size / 2f
+        )
 
-                remote.x -
-                    player.size / 2f,
+    }
 
-                remote.y -
-                    player.size / 2f,
+    "triangle" -> {
 
-                player.size,
+        val s = player.size
 
-                player.size
+        shape.triangle(
+            player.x,
+            player.y + s / 2f,
+            player.x - s / 2f,
+            player.y - s / 2f,
+            player.x + s / 2f,
+            player.y - s / 2f
+        )
 
-            )
-
-        }
+    }
+}
 
         shape.end()
 
