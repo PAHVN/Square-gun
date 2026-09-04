@@ -1,5 +1,9 @@
 package gdx.liftoff
 
+import com.badlogic.gdx.graphics.PerspectiveCamera
+import com.badlogic.gdx.graphics.g3d.ModelBatch
+import com.badlogic.gdx.graphics.g3d.Environment
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -26,6 +30,9 @@ class GameScreen(
 
     private lateinit var shape: ShapeRenderer
 
+	private lateinit var modelBatch: ModelBatch
+private lateinit var environment: Environment
+private lateinit var camera3D: PerspectiveCamera
 	private lateinit var batch: SpriteBatch
 private lateinit var font: BitmapFont
 
@@ -172,6 +179,40 @@ profile.color,
     init {
 
         shape = ShapeRenderer()
+
+	modelBatch = ModelBatch()
+
+environment = Environment()
+environment.set(
+    ColorAttribute.createAmbientLight(
+        1f,
+        1f,
+        1f,
+        1f
+    )
+)
+camera3D = PerspectiveCamera(
+    67f,
+    Gdx.graphics.width.toFloat(),
+    Gdx.graphics.height.toFloat()
+)
+
+camera3D.position.set(
+    0f,
+    15f,
+    20f
+)
+
+camera3D.lookAt(
+    0f,
+    0f,
+    0f
+)
+
+camera3D.near = 0.1f
+camera3D.far = 1000f
+
+camera3D.update()
 
 	batch = SpriteBatch()
 font = BitmapFont()
@@ -603,10 +644,10 @@ if (::network.isInitialized) {
         skin.dispose()
 
         shape.dispose()
-
+	modelBatch.dispose()
 	batch.dispose()
 font.dispose()
-
+	
     }
 
 }
