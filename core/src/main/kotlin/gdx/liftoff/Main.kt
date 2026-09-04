@@ -41,6 +41,9 @@ private lateinit var font: BitmapFont
     private lateinit var prefs: Preferences
     private lateinit var joystick: Joystick
 
+	private val mapWidth = 3000f
+private val mapHeight = 3000f
+
     private lateinit var player: Player
 
 	private lateinit var profile: PlayerProfile
@@ -308,6 +311,51 @@ font = BitmapFont()
             ShapeRenderer.ShapeType.Filled
         )
 
+	// nền map
+shape.color = Color(0.25f, 0.35f, 0.25f, 1f)
+
+shape.rect(
+    0f,
+    0f,
+    mapWidth,
+    mapHeight
+)
+shape.color = Color.DARK_GRAY
+
+val wall = 40f
+
+// dưới
+shape.rect(
+    0f,
+    0f,
+    mapWidth,
+    wall
+)
+
+// trên
+shape.rect(
+    0f,
+    mapHeight - wall,
+    mapWidth,
+    wall
+)
+
+// trái
+shape.rect(
+    0f,
+    0f,
+    wall,
+    mapHeight
+)
+
+// phải
+shape.rect(
+    mapWidth - wall,
+    0f,
+    wall,
+    mapHeight
+)
+
 		shape.color = when (profile.color) {
     "red" -> Color.RED
     "blue" -> Color.BLUE
@@ -492,6 +540,18 @@ batch.end()
     joystick.moveX,
     joystick.moveY
 )
+
+player.x =
+    player.x.coerceIn(
+        player.size / 2f,
+        mapWidth - player.size / 2f
+    )
+
+player.y =
+    player.y.coerceIn(
+        player.size / 2f,
+        mapHeight - player.size / 2f
+    )
 
 if (::network.isInitialized) {
 
