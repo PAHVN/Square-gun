@@ -354,6 +354,58 @@ when (profile.shape) {
     }
 }
 
+	for (remote in remotePlayers.values) {
+
+    shape.color = when (remote.color) {
+        "red" -> Color.RED
+        "blue" -> Color.BLUE
+        "green" -> Color.GREEN
+        "yellow" -> Color.YELLOW
+        else -> Color.BLUE
+    }
+
+    when (remote.shape) {
+
+        "square" -> {
+
+            shape.rect(
+                remote.x - player.size / 2f,
+                remote.y - player.size / 2f,
+                player.size,
+                player.size
+            )
+
+        }
+
+        "circle" -> {
+
+            shape.circle(
+                remote.x,
+                remote.y,
+                player.size / 2f
+            )
+
+        }
+
+        "triangle" -> {
+
+            val s = player.size
+
+            shape.triangle(
+                remote.x,
+                remote.y + s / 2f,
+                remote.x - s / 2f,
+                remote.y - s / 2f,
+                remote.x + s / 2f,
+                remote.y - s / 2f
+            )
+
+        }
+
+    }
+
+}
+
         shape.end()
 
 	batch.projectionMatrix = camera.combined
@@ -362,7 +414,7 @@ batch.begin()
 // nickname của mình
 font.draw(
     batch,
-    "YOU",
+    profile.nickname,
     player.x - 20f,
     player.y + player.size
 )
