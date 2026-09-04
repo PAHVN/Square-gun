@@ -1,5 +1,6 @@
 package gdx.liftoff
 
+import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.ApplicationAdapter
@@ -19,7 +20,9 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import gdx.liftoff.network.NetworkClient
 
-class Main : ApplicationAdapter() {
+class GameScreen(
+    private val game: SquareGunGame
+) : ScreenAdapter() {
 
     private lateinit var shape: ShapeRenderer
 
