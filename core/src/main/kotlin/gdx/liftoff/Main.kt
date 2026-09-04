@@ -166,7 +166,7 @@ profile.color,
         network.connect()
 
     }
-    override fun create() {
+    init {
 
         shape = ShapeRenderer()
 
@@ -413,7 +413,7 @@ batch.end()
 
     }
 
-    override fun render() {
+    override fun render(delta: Float) {
 
         ScreenUtils.clear(
             0.15f,
@@ -422,10 +422,7 @@ batch.end()
             1f
         )
 
-        stage.act(
-            Gdx.graphics.deltaTime
-        )
-
+        stage.act(delta)
         joystick.update()
 
         player.update(
@@ -436,7 +433,7 @@ batch.end()
 
 if (::network.isInitialized) {
 
-    sendTimer += Gdx.graphics.deltaTime
+    sendTimer += delta
 
     if (sendTimer >= sendInterval) {
 
