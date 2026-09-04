@@ -1,5 +1,10 @@
 package gdx.liftoff
 
+import com.badlogic.gdx.graphics.VertexAttributes
+import com.badlogic.gdx.graphics.g3d.Model
+import com.badlogic.gdx.graphics.g3d.ModelInstance
+import com.badlogic.gdx.graphics.g3d.Material
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.Environment
@@ -33,6 +38,8 @@ class GameScreen(
 	private lateinit var modelBatch: ModelBatch
 private lateinit var environment: Environment
 private lateinit var camera3D: PerspectiveCamera
+private lateinit var cubeModel: Model
+private lateinit var cubeInstance: ModelInstance
 	private lateinit var batch: SpriteBatch
 private lateinit var font: BitmapFont
 
@@ -213,6 +220,23 @@ camera3D.near = 0.1f
 camera3D.far = 1000f
 
 camera3D.update()
+
+val modelBuilder = ModelBuilder()
+
+cubeModel = modelBuilder.createBox(
+    2f,
+    2f,
+    2f,
+    Material(),
+    VertexAttributes.Usage.Position.toLong()
+)
+
+cubeInstance = ModelInstance(cubeModel)
+cubeInstance.transform.setToTranslation(
+    0f,
+    0f,
+    0f
+)
 
 	batch = SpriteBatch()
 font = BitmapFont()
@@ -573,6 +597,10 @@ batch.end()
             1f
         )
 
+	modelBatch.begin(camera3D)
+modelBatch.render(cubeInstance, environment)
+modelBatch.end()
+
         stage.act(delta)
         joystick.update()
 
@@ -644,7 +672,8 @@ if (::network.isInitialized) {
         skin.dispose()
 
         shape.dispose()
-	modelBatch.dispose()
+cubeModel.dispose()	
+modelBatch.dispose()
 	batch.dispose()
 font.dispose()
 	
