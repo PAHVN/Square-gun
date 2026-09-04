@@ -70,8 +70,8 @@ class Test3DScreen(
                     com.badlogic.gdx.graphics.Color.RED
                 )
             ),
-            VertexAttributes.Usage.Position or
-            VertexAttributes.Usage.Normal
+            VertexAttributes.Usage.Position.toLong() or
+VertexAttributes.Usage.Normal.toLong()
         )
 
         cube = ModelInstance(model)
