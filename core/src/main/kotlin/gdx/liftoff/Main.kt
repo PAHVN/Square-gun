@@ -40,6 +40,9 @@ private lateinit var environment: Environment
 private lateinit var camera3D: PerspectiveCamera
 private lateinit var cubeModel: Model
 private lateinit var cubeInstance: ModelInstance
+private lateinit var groundModel: Model
+private lateinit var groundInstance: ModelInstance
+
 	private lateinit var batch: SpriteBatch
 private lateinit var font: BitmapFont
 
@@ -237,6 +240,28 @@ cubeInstance.transform.setToTranslation(
     0f,
     0f
 )
+
+groundModel = modelBuilder.createBox(
+    100f,
+    0.2f,
+    100f,
+    Material(
+        ColorAttribute.createDiffuse(
+            Color.FOREST
+        )
+    ),
+    VertexAttributes.Usage.Position.toLong() or
+    VertexAttributes.Usage.Normal.toLong()
+)
+
+groundInstance = ModelInstance(groundModel)
+
+groundInstance.transform.setToTranslation(
+    0f,
+    -1.1f,
+    0f
+)
+
 
 	batch = SpriteBatch()
 font = BitmapFont()
@@ -598,7 +623,17 @@ batch.end()
         )
 
 	modelBatch.begin(camera3D)
-modelBatch.render(cubeInstance, environment)
+
+modelBatch.render(
+    groundInstance,
+    environment
+)
+
+modelBatch.render(
+    cubeInstance,
+    environment
+)
+
 modelBatch.end()
 
         stage.act(delta)
@@ -674,6 +709,7 @@ if (::network.isInitialized) {
         shape.dispose()
 cubeModel.dispose()	
 modelBatch.dispose()
+groundModel.dispose()
 	batch.dispose()
 font.dispose()
 	
