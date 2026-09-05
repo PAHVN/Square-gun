@@ -721,11 +721,11 @@ camera3D.lookAt(
 
 camera3D.update()
 
-        drawWorld()
+//        drawWorld()
 
-        drawHud()
+//        drawHud()
 
-        stage.draw()
+//        stage.draw()
 
     }
 
