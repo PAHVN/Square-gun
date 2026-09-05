@@ -510,35 +510,27 @@ font.draw(
 
 batch.end()
 
-        shape.color =
-            Color.DARK_GRAY
+// Move joystick
+shape.color = Color.DARK_GRAY
 
-        shape.circle(
+shape.circle(
+    moveJoystick.center.x,
+    moveJoystick.center.y,
+    moveJoystick.radius
+)
 
-            joystick.center.x,
-            joystick.center.y,
-            joystick.radius
+shape.color = Color.WHITE
 
-        )
+shape.circle(
+    moveJoystick.center.x +
+        moveJoystick.moveX * moveJoystick.radius,
+    moveJoystick.center.y +
+        moveJoystick.moveY * moveJoystick.radius,
+    moveJoystick.knobRadius
+)
 
-        shape.color =
-            Color.WHITE
-
-        shape.circle(
-
-            joystick.center.x +
-                joystick.moveX *
-                joystick.radius,
-
-            joystick.center.y +
-                joystick.moveY *
-                joystick.radius,
-
-            joystick.knobRadius
-
-        )
-
-	shape.color = Color.DARK_GRAY
+// Aim joystick
+shape.color = Color.DARK_GRAY
 
 shape.circle(
     aimJoystick.center.x,
@@ -550,16 +542,11 @@ shape.color = Color.WHITE
 
 shape.circle(
     aimJoystick.center.x +
-        aimJoystick.moveX *
-        aimJoystick.radius,
-
+        aimJoystick.moveX * aimJoystick.radius,
     aimJoystick.center.y +
-        aimJoystick.moveY *
-        aimJoystick.radius,
-
+        aimJoystick.moveY * aimJoystick.radius,
     aimJoystick.knobRadius
 )
-
         shape.end()
 
     }
