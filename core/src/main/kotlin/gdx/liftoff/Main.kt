@@ -230,8 +230,13 @@ cubeModel = modelBuilder.createBox(
     2f,
     2f,
     2f,
-    Material(),
-    VertexAttributes.Usage.Position.toLong()
+    Material(
+        ColorAttribute.createDiffuse(
+            Color.RED
+        )
+    ),
+    VertexAttributes.Usage.Position.toLong() or
+    VertexAttributes.Usage.Normal.toLong()
 )
 
 cubeInstance = ModelInstance(cubeModel)
@@ -581,6 +586,19 @@ batch.end()
             ShapeRenderer.ShapeType.Filled
         )
 
+		batch.projectionMatrix = stage.camera.combined
+
+batch.begin()
+
+font.draw(
+    batch,
+    "DEV-3D-01",
+    20f,
+    Gdx.graphics.height - 20f
+)
+
+batch.end()
+
         shape.color =
             Color.DARK_GRAY
 
@@ -644,7 +662,11 @@ modelBatch.end()
     joystick.moveX,
     joystick.moveY
 )
-
+cubeInstance.transform.setToTranslation(
+    player.x / 30f - 50f,
+    1f,
+    player.y / 30f - 50f
+)
 player.x =
     player.x.coerceIn(
         player.size / 2f,
@@ -685,6 +707,19 @@ if (::network.isInitialized) {
             player.x,
             player.y
         )
+camera3D.position.set(
+    player.x / 30f - 50f,
+    18f,
+    player.y / 30f - 35f
+)
+
+camera3D.lookAt(
+    player.x / 30f - 50f,
+    0f,
+    player.y / 30f - 50f
+)
+
+camera3D.update()
 
         drawWorld()
 
