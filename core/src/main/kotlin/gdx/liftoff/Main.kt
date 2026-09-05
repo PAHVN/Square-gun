@@ -1,15 +1,5 @@
 package gdx.liftoff
 
-import com.badlogic.gdx.graphics.VertexAttributes
-import com.badlogic.gdx.graphics.g3d.Model
-import com.badlogic.gdx.graphics.g3d.ModelInstance
-import com.badlogic.gdx.graphics.g3d.Material
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
-import com.badlogic.gdx.graphics.PerspectiveCamera
-import com.badlogic.gdx.graphics.g3d.ModelBatch
-import com.badlogic.gdx.graphics.g3d.Environment
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
-import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.ApplicationAdapter
@@ -34,14 +24,6 @@ class GameScreen(
 ) : ScreenAdapter() {
 
     private lateinit var shape: ShapeRenderer
-
-	private lateinit var modelBatch: ModelBatch
-private lateinit var environment: Environment
-private lateinit var camera3D: PerspectiveCamera
-private lateinit var cubeModel: Model
-private lateinit var cubeInstance: ModelInstance
-private lateinit var groundModel: Model
-private lateinit var groundInstance: ModelInstance
 
 	private lateinit var batch: SpriteBatch
 private lateinit var font: BitmapFont
@@ -189,84 +171,6 @@ profile.color,
     init {
 
         shape = ShapeRenderer()
-
-	modelBatch = ModelBatch()
-
-environment = Environment()
-environment.set(
-    ColorAttribute.createAmbientLight(
-        1f,
-        1f,
-        1f,
-        1f
-    )
-)
-camera3D = PerspectiveCamera(
-    67f,
-    Gdx.graphics.width.toFloat(),
-    Gdx.graphics.height.toFloat()
-)
-
-camera3D.position.set(
-    0f,
-    15f,
-    20f
-)
-
-camera3D.lookAt(
-    0f,
-    0f,
-    0f
-)
-
-camera3D.near = 0.1f
-camera3D.far = 1000f
-
-camera3D.update()
-
-val modelBuilder = ModelBuilder()
-
-cubeModel = modelBuilder.createBox(
-    2f,
-    2f,
-    2f,
-    Material(
-        ColorAttribute.createDiffuse(
-            Color.RED
-        )
-    ),
-    VertexAttributes.Usage.Position.toLong() or
-    VertexAttributes.Usage.Normal.toLong()
-)
-
-cubeInstance = ModelInstance(cubeModel)
-cubeInstance.transform.setToTranslation(
-    0f,
-    0f,
-    0f
-)
-
-groundModel = modelBuilder.createBox(
-    100f,
-    0.2f,
-    100f,
-    Material(
-        ColorAttribute.createDiffuse(
-            Color.FOREST
-        )
-    ),
-    VertexAttributes.Usage.Position.toLong() or
-    VertexAttributes.Usage.Normal.toLong()
-)
-
-groundInstance = ModelInstance(groundModel)
-
-groundInstance.transform.setToTranslation(
-    0f,
-    -1.1f,
-    0f
-)
-
 
 	batch = SpriteBatch()
 font = BitmapFont()
@@ -640,20 +544,6 @@ batch.end()
             1f
         )
 
-	modelBatch.begin(camera3D)
-
-modelBatch.render(
-    groundInstance,
-    environment
-)
-
-modelBatch.render(
-    cubeInstance,
-    environment
-)
-
-modelBatch.end()
-
         stage.act(delta)
         joystick.update()
 
@@ -661,11 +551,6 @@ modelBatch.end()
 
     joystick.moveX,
     joystick.moveY
-)
-cubeInstance.transform.setToTranslation(
-    player.x / 30f - 50f,
-    1f,
-    player.y / 30f - 50f
 )
 player.x =
     player.x.coerceIn(
@@ -707,25 +592,11 @@ if (::network.isInitialized) {
             player.x,
             player.y
         )
-camera3D.position.set(
-    player.x / 30f - 50f,
-    18f,
-    player.y / 30f - 35f
-)
+        drawWorld()
 
-camera3D.lookAt(
-    player.x / 30f - 50f,
-    0f,
-    player.y / 30f - 50f
-)
+        drawHud()
 
-camera3D.update()
-
-//        drawWorld()
-
-//        drawHud()
-
-//        stage.draw()
+        stage.draw()
 
     }
 
@@ -742,9 +613,6 @@ camera3D.update()
         skin.dispose()
 
         shape.dispose()
-cubeModel.dispose()	
-modelBatch.dispose()
-groundModel.dispose()
 	batch.dispose()
 font.dispose()
 	
