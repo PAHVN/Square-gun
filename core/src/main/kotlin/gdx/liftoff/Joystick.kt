@@ -22,40 +22,88 @@ class Joystick(
 
     val knobRadius = 45f
 
-    fun update() {
+	private var pointer = -1
 
-        if (!Gdx.input.isTouched) {
+fun update() {
 
-            moveX = 0f
-            moveY = 0f
-            return
+    // Nếu đang có pointer nhưng đã nhấc tay
+    if (pointer != -1 &&
+        !Gdx.input.isTouched(pointer)
+    ) {
 
-        }
+        pointer = -1
+        moveX = 0f
+        moveY = 0f
 
-        val tx = Gdx.input.x.toFloat()
+    }
 
-        val ty =
-            Gdx.graphics.height -
-            Gdx.input.y.toFloat()
+    // Nếu chưa có pointer thì tìm ngón tay nằm trong vùng joystick
+    if (pointer == -1) {
 
-        val dx = tx - center.x
-        val dy = ty - center.y
+        for (i in 0 until 10) {
 
-        val dist =
-            sqrt(dx * dx + dy * dy)
+            if (!Gdx.input.isTouched(i))
+                continue
 
-        if (dist <= radius) {
+            val tx =
+                Gdx.input.getX(i).toFloat()
 
-            moveX = dx / radius
-            moveY = dy / radius
+            val ty =
+                Gdx.graphics.height -
+                Gdx.input.getY(i).toFloat()
 
-        } else {
+            val dx = tx - center.x
+            val dy = ty - center.y
 
-            moveX = dx / dist
-            moveY = dy / dist
+            val dist =
+                sqrt(dx * dx + dy * dy)
+
+            if (dist <= radius) {
+
+                pointer = i
+                break
+
+            }
 
         }
 
     }
+
+    // Chưa có ngón nào điều khiển
+    if (pointer == -1) {
+
+        moveX = 0f
+        moveY = 0f
+        return
+
+    }
+
+    // Cập nhật vị trí joystick
+    val tx =
+        Gdx.input.getX(pointer).toFloat()
+
+    val ty =
+        Gdx.graphics.height -
+        Gdx.input.getY(pointer).toFloat()
+
+    val dx = tx - center.x
+    val dy = ty - center.y
+
+    val dist =
+        sqrt(dx * dx + dy * dy)
+
+    if (dist <= radius) {
+
+        moveX = dx / radius
+        moveY = dy / radius
+
+    } else {
+
+        moveX = dx / dist
+        moveY = dy / dist
+
+    }
+
+}
 
 }

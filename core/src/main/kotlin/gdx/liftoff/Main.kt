@@ -39,7 +39,8 @@ private lateinit var font: BitmapFont
     private lateinit var connectButton: TextButton
 
     private lateinit var prefs: Preferences
-    private lateinit var joystick: Joystick
+private lateinit var moveJoystick: Joystick
+private lateinit var aimJoystick: Joystick
 
 	private val mapWidth = 3000f
 private val mapHeight = 3000f
@@ -189,12 +190,17 @@ font = BitmapFont()
 
         player = Player()
 
-        joystick =
-            Joystick(
-                180f,
-                180f,
-                120f
-            )
+moveJoystick = Joystick(
+    180f,
+    180f,
+    120f
+)
+
+aimJoystick = Joystick(
+    Gdx.graphics.width - 180f,
+    180f,
+    120f
+)
 
         prefs =
             Gdx.app.getPreferences(
@@ -532,6 +538,28 @@ batch.end()
 
         )
 
+	shape.color = Color.DARK_GRAY
+
+shape.circle(
+    aimJoystick.center.x,
+    aimJoystick.center.y,
+    aimJoystick.radius
+)
+
+shape.color = Color.WHITE
+
+shape.circle(
+    aimJoystick.center.x +
+        aimJoystick.moveX *
+        aimJoystick.radius,
+
+    aimJoystick.center.y +
+        aimJoystick.moveY *
+        aimJoystick.radius,
+
+    aimJoystick.knobRadius
+)
+
         shape.end()
 
     }
@@ -546,12 +574,13 @@ batch.end()
         )
 
         stage.act(delta)
-        joystick.update()
-
-        player.update(
-
-    joystick.moveX,
-    joystick.moveY
+player.update(
+    moveJoystick.moveX,
+    moveJoystick.moveY
+)
+player.update(
+    moveJoystick.moveX,
+    moveJoystick.moveY
 )
 player.x =
     player.x.coerceIn(
